@@ -1,0 +1,16 @@
+body {
+  margin: 0;
+  background: #111827;
+  color: white;
+  overflow: hidden;
+}
+
+#viewer {
+  width: 100%;
+  height: calc(100vh - 112px);
+  background: linear-gradient(135deg, #0f172a, #020617);
+}
+
+footer {
+  height: 56px;
+}
