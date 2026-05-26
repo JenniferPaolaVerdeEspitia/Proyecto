@@ -15,14 +15,11 @@ const camera = new THREE.PerspectiveCamera(
   1000
 );
 
-// Grupo jugador
 const player = new THREE.Group();
 scene.add(player);
 
-camera.position.set(0, 1.6, 0);
+camera.position.set(0, 1.45, 0);
 player.add(camera);
-
-// Posición inicial
 player.position.set(0, 0, 4);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -32,12 +29,10 @@ renderer.shadowMap.enabled = true;
 renderer.xr.enabled = true;
 container.appendChild(renderer.domElement);
 
-// Botón VR oculto de Three.js
 const vrButton = VRButton.createButton(renderer);
 vrButton.style.display = 'none';
 document.body.appendChild(vrButton);
 
-// Botón personalizado del HTML
 const btnVR = document.getElementById('btnVR');
 
 if (btnVR) {
@@ -46,14 +41,12 @@ if (btnVR) {
   });
 }
 
-// Controles PC
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.target.set(player.position.x, 1.6, player.position.z - 1);
+controls.target.set(player.position.x, 1.45, player.position.z - 2);
 controls.update();
 
-// Luces
 const light = new THREE.HemisphereLight(0xffffff, 0x444444, 2.5);
 scene.add(light);
 
@@ -62,7 +55,6 @@ directionalLight.position.set(8, 12, 10);
 directionalLight.castShadow = true;
 scene.add(directionalLight);
 
-// Piso exterior
 const floorGeometry = new THREE.PlaneGeometry(80, 80);
 const floorMaterial = new THREE.MeshStandardMaterial({
   color: 0x1e293b,
@@ -76,7 +68,6 @@ floor.position.y = -0.04;
 floor.receiveShadow = true;
 scene.add(floor);
 
-// Movimiento teclado
 const keys = {};
 
 window.addEventListener('keydown', (e) => {
@@ -88,28 +79,81 @@ window.addEventListener('keyup', (e) => {
 });
 
 const moveSpeedPC = 0.08;
-const moveSpeedVR = 0.055;
+const moveSpeedVR = 0.10;
+const rotateSpeed = 0.045;
+
+function getCameraDirections() {
+  const forward = new THREE.Vector3();
+  camera.getWorldDirection(forward);
+  forward.y = 0;
+  forward.normalize();
+
+  const right = new THREE.Vector3();
+  right.crossVectors(forward, new THREE.Vector3(0, 1, 0));
+  right.normalize();
+
+  return { forward, right };
+}
+
+function movePlayer(x, z, speed) {
+  const { forward, right } = getCameraDirections();
+
+  player.position.addScaledVector(forward, -z * speed);
+  player.position.addScaledVector(right, x * speed);
+
+  player.position.y = 0;
+}
 
 function movePC() {
   if (renderer.xr.isPresenting) return;
 
-  const direction = new THREE.Vector3();
+  let x = 0;
+  let z = 0;
 
-  if (keys['KeyW']) direction.z -= 1;
-  if (keys['KeyS']) direction.z += 1;
-  if (keys['KeyA']) direction.x -= 1;
-  if (keys['KeyD']) direction.x += 1;
+  if (keys['KeyW'] || keys['ArrowUp']) z -= 1;
+  if (keys['KeyS'] || keys['ArrowDown']) z += 1;
+  if (keys['KeyA'] || keys['ArrowLeft']) x -= 1;
+  if (keys['KeyD'] || keys['ArrowRight']) x += 1;
 
-  direction.normalize();
+  const direction = new THREE.Vector2(x, z);
 
-  player.position.x += direction.x * moveSpeedPC;
-  player.position.z += direction.z * moveSpeedPC;
+  if (direction.length() > 0) {
+    direction.normalize();
+    movePlayer(direction.x, direction.y, moveSpeedPC);
+  }
 
   controls.target.set(
     player.position.x,
-    1.6,
-    player.position.z - 1
+    1.45,
+    player.position.z - 2
   );
+
+  camera.position.y = 1.45;
+}
+
+function moveGamepadNormal() {
+  if (renderer.xr.isPresenting) return;
+
+  const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+
+  for (const gamepad of gamepads) {
+    if (!gamepad) continue;
+
+    const axes = gamepad.axes;
+
+    const x = axes[0] || 0;
+    const z = axes[1] || 0;
+
+    if (Math.abs(x) > 0.18 || Math.abs(z) > 0.18) {
+      movePlayer(x, z, moveSpeedVR);
+    }
+
+    if (gamepad.buttons[0]?.pressed) movePlayer(0, -1, moveSpeedVR);
+    if (gamepad.buttons[1]?.pressed) movePlayer(0, 1, moveSpeedVR);
+
+    if (gamepad.buttons[2]?.pressed) player.rotation.y += rotateSpeed;
+    if (gamepad.buttons[3]?.pressed) player.rotation.y -= rotateSpeed;
+  }
 }
 
 function moveVR() {
@@ -119,29 +163,30 @@ function moveVR() {
   for (const source of session.inputSources) {
     if (!source.gamepad) continue;
 
-    const axes = source.gamepad.axes;
+    const gamepad = source.gamepad;
+    const axes = gamepad.axes;
 
     const x = axes[2] || axes[0] || 0;
     const z = axes[3] || axes[1] || 0;
 
-    if (Math.abs(x) > 0.15) {
-      player.position.x += x * moveSpeedVR;
+    if (Math.abs(x) > 0.18 || Math.abs(z) > 0.18) {
+      movePlayer(x, z, moveSpeedVR);
     }
 
-    if (Math.abs(z) > 0.15) {
-      player.position.z += z * moveSpeedVR;
-    }
+    if (gamepad.buttons[0]?.pressed) movePlayer(0, -1, moveSpeedVR);
+    if (gamepad.buttons[1]?.pressed) movePlayer(0, 1, moveSpeedVR);
+
+    if (gamepad.buttons[2]?.pressed) player.rotation.y += rotateSpeed;
+    if (gamepad.buttons[3]?.pressed) player.rotation.y -= rotateSpeed;
   }
 }
 
-// Mandos VR
 const controller1 = renderer.xr.getController(0);
 const controller2 = renderer.xr.getController(1);
 
 player.add(controller1);
 player.add(controller2);
 
-// Cargar modelo
 const loader = new GLTFLoader();
 
 loader.load(
@@ -173,9 +218,10 @@ loader.load(
       }
     });
 
-    player.position.set(0, 0, 3);
+    player.position.set(0, 0, 2);
+    camera.position.y = 1.45;
 
-    controls.target.set(0, 1.6, 0);
+    controls.target.set(0, 1.45, 0);
     controls.update();
 
     console.log('Modelo cargado correctamente');
@@ -190,16 +236,15 @@ loader.load(
   }
 );
 
-// Resize
 window.addEventListener('resize', () => {
   camera.aspect = container.clientWidth / container.clientHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(container.clientWidth, container.clientHeight);
 });
 
-// Animación
 renderer.setAnimationLoop(() => {
   movePC();
+  moveGamepadNormal();
   moveVR();
 
   if (!renderer.xr.isPresenting) {
