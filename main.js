@@ -15,14 +15,14 @@ const camera = new THREE.PerspectiveCamera(
   1000
 );
 
-// Grupo jugador para moverse en VR
+// Grupo jugador
 const player = new THREE.Group();
 scene.add(player);
 
 camera.position.set(0, 1.6, 0);
 player.add(camera);
 
-// Posición inicial dentro del salón
+// Posición inicial
 player.position.set(0, 0, 4);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -32,9 +32,21 @@ renderer.shadowMap.enabled = true;
 renderer.xr.enabled = true;
 container.appendChild(renderer.domElement);
 
-document.body.appendChild(VRButton.createButton(renderer));
+// Botón VR oculto de Three.js
+const vrButton = VRButton.createButton(renderer);
+vrButton.style.display = 'none';
+document.body.appendChild(vrButton);
 
-// Controles para PC
+// Botón personalizado del HTML
+const btnVR = document.getElementById('btnVR');
+
+if (btnVR) {
+  btnVR.addEventListener('click', () => {
+    vrButton.click();
+  });
+}
+
+// Controles PC
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
@@ -50,7 +62,7 @@ directionalLight.position.set(8, 12, 10);
 directionalLight.castShadow = true;
 scene.add(directionalLight);
 
-// Piso exterior opcional
+// Piso exterior
 const floorGeometry = new THREE.PlaneGeometry(80, 80);
 const floorMaterial = new THREE.MeshStandardMaterial({
   color: 0x1e293b,
@@ -64,7 +76,7 @@ floor.position.y = -0.04;
 floor.receiveShadow = true;
 scene.add(floor);
 
-// Movimiento con teclado
+// Movimiento teclado
 const keys = {};
 
 window.addEventListener('keydown', (e) => {
@@ -161,7 +173,6 @@ loader.load(
       }
     });
 
-    // Cámara dentro del salón
     player.position.set(0, 0, 3);
 
     controls.target.set(0, 1.6, 0);

@@ -1,16 +1,138 @@
-body {
-  margin: 0;
-  background: #111827;
-  color: white;
-  overflow: hidden;
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
 }
 
-#viewer {
-  width: 100%;
-  height: calc(100vh - 112px);
-  background: linear-gradient(135deg, #0f172a, #020617);
+body{
+  background:#0f172a;
+  color:white;
+  overflow:hidden;
+  font-family:Arial, Helvetica, sans-serif;
 }
 
-footer {
-  height: 56px;
+/* NAVBAR */
+.navbar{
+  height:56px;
+  background:linear-gradient(90deg,#020617,#111827);
+  box-shadow:0 4px 15px rgba(0,0,0,0.5);
+  z-index:20;
+}
+
+/* VISOR 3D */
+#viewer{
+  width:100%;
+  height:calc(100vh - 112px);
+  background:linear-gradient(135deg,#0f172a,#020617);
+}
+
+/* FOOTER */
+footer{
+  height:56px;
+  background:linear-gradient(90deg,#020617,#111827);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  box-shadow:0 -4px 15px rgba(0,0,0,0.4);
+  z-index:20;
+  position:relative;
+}
+
+/* PANEL DE INSTRUCCIONES */
+.panel-instrucciones{
+  position:fixed;
+  top:85px;
+  left:25px;
+
+  width:330px;
+
+  padding:22px;
+
+  border-radius:22px;
+
+  background:rgba(15,23,42,0.82);
+
+  backdrop-filter:blur(14px);
+
+  border:1px solid rgba(255,255,255,0.08);
+
+  box-shadow:
+    0 0 25px rgba(0,0,0,0.45),
+    0 0 10px rgba(59,130,246,0.25);
+
+  z-index:50;
+
+  animation:fadeIn 1s ease;
+}
+
+/* TITULO */
+.panel-instrucciones h2{
+  font-size:24px;
+  margin-bottom:15px;
+  color:#60a5fa;
+}
+
+/* TEXTO */
+.panel-instrucciones p{
+  font-size:14px;
+  line-height:1.6;
+  margin-bottom:10px;
+  color:#e5e7eb;
+}
+
+/* BOTON VR */
+#btnVR{
+  width:100%;
+  margin-top:15px;
+  padding:14px;
+
+  border:none;
+  border-radius:14px;
+
+  background:linear-gradient(135deg,#2563eb,#7c3aed);
+
+  color:white;
+  font-size:16px;
+  font-weight:bold;
+
+  cursor:pointer;
+
+  transition:0.3s;
+}
+
+/* HOVER BOTON */
+#btnVR:hover{
+  transform:scale(1.04);
+
+  box-shadow:
+    0 0 20px rgba(59,130,246,0.6),
+    0 0 30px rgba(124,58,237,0.5);
+}
+
+/* EFECTO APARICION */
+@keyframes fadeIn{
+  from{
+    opacity:0;
+    transform:translateY(-20px);
+  }
+
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+
+  .panel-instrucciones{
+    width:90%;
+    left:5%;
+    top:75px;
+  }
+
+  .panel-instrucciones h2{
+    font-size:20px;
+  }
+
 }
