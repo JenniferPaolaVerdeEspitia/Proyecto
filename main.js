@@ -231,7 +231,7 @@ player.add(controller2);
 const loader = new GLTFLoader();
 
 loader.load(
-  './models/SalonY8.glb',
+  './models/salon.glb',
 
   (gltf) => {
     const model = gltf.scene;
