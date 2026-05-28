@@ -18,9 +18,9 @@ const camera = new THREE.PerspectiveCamera(
 const player = new THREE.Group();
 scene.add(player);
 
-camera.position.set(0, 1.45, 0);
+camera.position.set(0, 1.15, 0);
 player.add(camera);
-player.position.set(0, 0, 4);
+player.position.set(0, 0, 2);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(container.clientWidth, container.clientHeight);
@@ -34,6 +34,11 @@ vrButton.style.display = 'none';
 document.body.appendChild(vrButton);
 
 const btnVR = document.getElementById('btnVR');
+const btnSalirVR = document.getElementById('btnSalirVR');
+const btnCentrarVista = document.getElementById('btnCentrarVista');
+const panelInstrucciones = document.getElementById('panelInstrucciones');
+const btnOcultarPanel = document.getElementById('btnOcultarPanel');
+const btnMostrarPanel = document.getElementById('btnMostrarPanel');
 
 if (btnVR) {
   btnVR.addEventListener('click', () => {
@@ -41,12 +46,50 @@ if (btnVR) {
   });
 }
 
+if (btnSalirVR) {
+  btnSalirVR.addEventListener('click', () => {
+    const session = renderer.xr.getSession();
+    if (session) session.end();
+  });
+}
+
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.target.set(player.position.x, 1.45, player.position.z - 2);
+controls.target.set(0, 1.15, -5);
 controls.update();
 
+function centrarVistaSalon() {
+  player.position.set(0, 0, 2);
+  player.rotation.set(0, 0, 0);
+  camera.position.set(0, 1.15, 0);
+
+  // Vista hacia el pizarrón
+  controls.target.set(0, 1.15, 5);
+  controls.update();
+}
+
+if (btnCentrarVista) {
+  btnCentrarVista.addEventListener('click', () => {
+    centrarVistaSalon();
+  });
+}
+
+if (btnOcultarPanel && panelInstrucciones && btnMostrarPanel) {
+  btnOcultarPanel.addEventListener('click', () => {
+    panelInstrucciones.style.display = 'none';
+    btnMostrarPanel.style.display = 'block';
+  });
+}
+
+if (btnMostrarPanel && panelInstrucciones) {
+  btnMostrarPanel.addEventListener('click', () => {
+    panelInstrucciones.style.display = 'block';
+    btnMostrarPanel.style.display = 'none';
+  });
+}
+
+// Luces
 const light = new THREE.HemisphereLight(0xffffff, 0x444444, 2.5);
 scene.add(light);
 
@@ -55,6 +98,7 @@ directionalLight.position.set(8, 12, 10);
 directionalLight.castShadow = true;
 scene.add(directionalLight);
 
+// Piso exterior
 const floorGeometry = new THREE.PlaneGeometry(80, 80);
 const floorMaterial = new THREE.MeshStandardMaterial({
   color: 0x1e293b,
@@ -68,10 +112,15 @@ floor.position.y = -0.04;
 floor.receiveShadow = true;
 scene.add(floor);
 
+// Teclado
 const keys = {};
 
 window.addEventListener('keydown', (e) => {
   keys[e.code] = true;
+
+  if (e.code === 'KeyR') {
+    centrarVistaSalon();
+  }
 });
 
 window.addEventListener('keyup', (e) => {
@@ -80,7 +129,6 @@ window.addEventListener('keyup', (e) => {
 
 const moveSpeedPC = 0.08;
 const moveSpeedVR = 0.10;
-const rotateSpeed = 0.045;
 
 function getCameraDirections() {
   const forward = new THREE.Vector3();
@@ -122,13 +170,7 @@ function movePC() {
     movePlayer(direction.x, direction.y, moveSpeedPC);
   }
 
-  controls.target.set(
-    player.position.x,
-    1.45,
-    player.position.z - 2
-  );
-
-  camera.position.y = 1.45;
+  camera.position.y = 1.15;
 }
 
 function moveGamepadNormal() {
@@ -141,18 +183,17 @@ function moveGamepadNormal() {
 
     const axes = gamepad.axes;
 
-    const x = axes[0] || 0;
-    const z = axes[1] || 0;
+    const x = axes[0] || axes[2] || 0;
+    const z = axes[1] || axes[3] || 0;
 
-    if (Math.abs(x) > 0.18 || Math.abs(z) > 0.18) {
+    if (Math.abs(x) > 0.15 || Math.abs(z) > 0.15) {
       movePlayer(x, z, moveSpeedVR);
     }
 
     if (gamepad.buttons[0]?.pressed) movePlayer(0, -1, moveSpeedVR);
     if (gamepad.buttons[1]?.pressed) movePlayer(0, 1, moveSpeedVR);
-
-    if (gamepad.buttons[2]?.pressed) player.rotation.y += rotateSpeed;
-    if (gamepad.buttons[3]?.pressed) player.rotation.y -= rotateSpeed;
+    if (gamepad.buttons[2]?.pressed) movePlayer(-1, 0, moveSpeedVR);
+    if (gamepad.buttons[3]?.pressed) movePlayer(1, 0, moveSpeedVR);
   }
 }
 
@@ -166,18 +207,17 @@ function moveVR() {
     const gamepad = source.gamepad;
     const axes = gamepad.axes;
 
-    const x = axes[2] || axes[0] || 0;
-    const z = axes[3] || axes[1] || 0;
+    const x = axes[0] || axes[2] || 0;
+    const z = axes[1] || axes[3] || 0;
 
-    if (Math.abs(x) > 0.18 || Math.abs(z) > 0.18) {
+    if (Math.abs(x) > 0.15 || Math.abs(z) > 0.15) {
       movePlayer(x, z, moveSpeedVR);
     }
 
     if (gamepad.buttons[0]?.pressed) movePlayer(0, -1, moveSpeedVR);
     if (gamepad.buttons[1]?.pressed) movePlayer(0, 1, moveSpeedVR);
-
-    if (gamepad.buttons[2]?.pressed) player.rotation.y += rotateSpeed;
-    if (gamepad.buttons[3]?.pressed) player.rotation.y -= rotateSpeed;
+    if (gamepad.buttons[2]?.pressed) movePlayer(-1, 0, moveSpeedVR);
+    if (gamepad.buttons[3]?.pressed) movePlayer(1, 0, moveSpeedVR);
   }
 }
 
@@ -187,10 +227,11 @@ const controller2 = renderer.xr.getController(1);
 player.add(controller1);
 player.add(controller2);
 
+// Cargar modelo
 const loader = new GLTFLoader();
 
 loader.load(
-  './models/salony8.glb',
+  './models/SalonY8.glb',
 
   (gltf) => {
     const model = gltf.scene;
@@ -218,17 +259,13 @@ loader.load(
       }
     });
 
-    player.position.set(0, 0, 2);
-    camera.position.y = 1.45;
-
-    controls.target.set(0, 1.45, 0);
-    controls.update();
+    centrarVistaSalon();
 
     console.log('Modelo cargado correctamente');
   },
 
   (xhr) => {
-    console.log(`Cargando: ${(xhr.loaded / xhr.total * 100).toFixed(2)}%`);
+    console.log(`Cargando: ${((xhr.loaded / xhr.total) * 100).toFixed(2)}%`);
   },
 
   (error) => {

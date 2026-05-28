@@ -1,10 +1,10 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>  
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Modelo 3D SketchUp en VR</title>
+  <title>Recorrido Virtual 3D del Salón</title>
   <link rel="icon" href="data:,">
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -14,22 +14,40 @@
 <body>
 
 <nav class="navbar navbar-dark bg-dark px-4">
-  <span class="navbar-brand mb-0 h1">Visor  Salon 3D </span>
+  <span class="navbar-brand mb-0 h1">Recorrido Virtual 3D del Salón</span>
 </nav>
 
-<div class="panel-instrucciones">
-  <h2>Exploración del Salón 3D</h2>
+<div class="panel-instrucciones" id="panelInstrucciones">
+  <button id="btnOcultarPanel" class="btn-cerrar" type="button">×</button>
 
-  <p><b>Instrucciones:</b></p>
-  <p>Usa <b>W, A, S, D</b> para moverte por el escenario.</p>
-  <p>Usa el <b>mouse</b> para girar la cámara.</p>
-  <p>En lentes VR, usa el <b>joystick</b> del control para desplazarte.</p>
-  <p>Presiona el botón para entrar al modo de realidad virtual.</p>
+  <h2>Explora el Salón en Realidad Virtual</h2>
 
-  <button id="btnVR" type="button">
-    Activar VR
-  </button>
+  <div class="bloque-info">
+    <h3>🖥️ Vista normal</h3>
+    <p>⌨️ <b>W</b> avanzar</p>
+    <p>⌨️ <b>S</b> retroceder</p>
+    <p>⌨️ <b>A</b> izquierda</p>
+    <p>⌨️ <b>D</b> derecha</p>
+    <p>🖱️ <b>Mouse</b> girar cámara</p>
+  </div>
+
+  <div class="bloque-info">
+    <h3>🎮 Modo VR</h3>
+    <p>🕹️ <b>Joystick</b> moverte</p>
+    <p>🔘 <b>A</b> avanzar</p>
+    <p>🔘 <b>B</b> retroceder</p>
+    <p>🔘 <b>X</b> izquierda</p>
+    <p>🔘 <b>Y</b> derecha</p>
+  </div>
+
+  <button id="btnVR" type="button">🥽 Activar VR</button>
+  <button id="btnSalirVR" type="button">🚪 Salir de VR</button>
+  <button id="btnCentrarVista" type="button">🎯 Centrar vista</button>
 </div>
+
+<button id="btnMostrarPanel" class="btn-mostrar-panel" type="button">
+  📋 Instrucciones
+</button>
 
 <main class="container-fluid p-0">
   <section id="viewer"></section>
